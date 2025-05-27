@@ -170,6 +170,7 @@ def handle_client(sock,tid,addr):
     AMessages.add_new_socket(sock)
     finish = False
     print(f'New Client number {tid} from {addr}')
+    print('hi')
     to_send=''
     sock.settimeout(0.1)
     while not finish:
