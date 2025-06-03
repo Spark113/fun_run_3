@@ -15,7 +15,6 @@ class log():
         self.pass_box = InputBox(200, 260, 300, 40, True, True, placeholder='Password')
         self.login_btn = Buttom(240, 330, 100, 40, True, 'Login')
         self.sign_up_btn = Buttom(360, 330, 100, 40, True, 'sign up')
-        self.err_box = TextBox(200, 400, 300, 40, True)
         self.exit_btn = Buttom(300, 460, 100, 40, True, 'Exit')
 
     def attemp_login(self,username,paswword):
@@ -78,7 +77,7 @@ class log():
         self.user_box.draw(self.controller.screen)
         self.pass_box.draw(self.controller.screen)
         self.login_btn.draw(self.controller.screen)
-        self.controller.exit_btn.draw(self.controller.screen)
-        self.err_box.draw(self.controller.screen)
+        self.exit_btn.draw(self.controller.screen)
+        self.controller.err_box.draw(self.controller.screen)
         self.sign_up_btn.draw(self.controller.screen)
         pygame.display.flip()

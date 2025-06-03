@@ -1,8 +1,6 @@
 import pickle
 import os
 
-from Demos.desktopmanager import hicon
-from requests.utils import dotted_netmask
 
 from encrption.RSA import RSA_CLASS
 from encrption.tcp_by_size import send_with_size, recv_by_size
@@ -18,8 +16,27 @@ from ui_elements.buttom import Buttom
 from part_of_game.connect_srv import connect
 from part_of_game.login import log
 from part_of_game.rooms import room
+from part_of_game.game_view import print_game
 class Game():
     def __init__(self):
+        """py game"""
+        self.screen_width = 700
+        self.screen_hight = 700
+        pygame.init()
+        pygame.mouse.set_visible(True)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_hight))
+
+        self.err_box = TextBox(200, 400, 300, 40, True)
+
+        pygame.display.set_caption('fun run game')
+        self.img_start = pygame.image.load('start.png').convert()
+        self.player_img = pygame.image.load('among_us.png').convert_alpha()
+        self.map_img = pygame.image.load('map.png').convert()
+        self.screen.blit(self.img_start, (0, 0))
+        self.clock = pygame.time.Clock()
+        self.refresh = 60
+
+        """משתנים של הלקוח"""
         self.debug=True
         self.conected=False
         self.sock=socket.socket()
@@ -31,30 +48,17 @@ class Game():
         self.connect_obj=connect(self)
         self.login_obj=log(self)
         self.rooms_obj=room(self)
-        """py game"""
-        self.window_width=700
-        self.window_hight=700
-        pygame.init()
-        pygame.mouse.set_visible(True)
-        self.screen=pygame.display.set_mode((self.window_width,self.window_hight))
-        pygame.display.set_caption('fun run game')
-        self.img_start=pygame.image.load('start.png').convert()
-        self.screen.blit(self.img_start,(0,0))
-        self.clock=pygame.time.Clock()
-        self.refresh=60
+        self.run_game=print_game(self)
 
-        self.refresh_btn=Buttom(100, 500, 150, 40,False, 'refresh')
-        self.make_room_btn=Buttom(500, 500, 150, 40,False, 'make room')
-        self.room_id=InputBox(450, 550, 240, 40,False, placeholder='room name')
-
-        self.err_box=TextBox(200,400,300,40,True)
-        self.exit_btn=Buttom(300, 460, 100, 40,True, 'exit')
-
-        self.connect_obj.connect_to_srv()
-
-        self.login_obj.login_loop()
-
-        self.rooms_obj.show_rooms()
+        print('start')
+        if not self.finish:
+            self.connect_obj.connect_to_srv()
+        if not self.finish:
+            self.login_obj.login_loop()
+        if not self.finish:
+            self.rooms_obj.show_rooms()
+        if not self.finish:
+            self.run_game.game()
         print('done')#works now i need to do the game
         pygame.quit()
 
@@ -67,7 +71,6 @@ class Game():
     def exit(self):
         try:
             self.err_box.set_text('shoting down')
-            self.draw_all()
             self.finish = True
             if self.conected:
                 self.listener.join()
@@ -82,17 +85,7 @@ class Game():
                 print('--------------------------------------------------')
 
 
-    #need to check that all the thing are in here
-    def draw_all(self):
-        self.screen.blit(self.img_start, (0, 0))  # to clear the screen
 
-        self.refresh_btn.draw(self.screen)
-        self.make_room_btn.draw(self.screen)
-        self.room_id.draw(self.screen)
-
-        self.err_box.draw(self.screen)
-        self.exit_btn.draw(self.screen)
-        pygame.display.flip()
 
     def listen(self):
         while not self.finish:
@@ -108,8 +101,7 @@ class Game():
                     d=pickle.loads(fields)
                     print(d)
                     self.rooms_obj.make_lst(d)
-                    self.rooms_obj.err_box.set_text('get refresh')
-                    self.draw_all()
+                    self.err_box.set_text('get refresh')
                 else:
                     data=data.decode()
                     action = data[:3]
@@ -118,14 +110,11 @@ class Game():
                         if fields[0]=='Login Successful':
                             self.finish_login=True
                             self.err_box.set_text(fields[0])
-                            self.draw_all()
                         else:
-                            self.login_obj.err_box.set_text(fields[0])
-                            self.draw_all()
+                            self.err_box.set_text(fields[0])
 
                     if action=='SUP':
                         self.err_box.set_text(fields[0])
-                        self.draw_all()
 
                     if action=='FRS':
                         try:
@@ -144,25 +133,24 @@ class Game():
                                 print('--------------------------------------------------')
 
                     if action=='MRS':
-                        self.rooms_obj.err_box.set_text(fields[0])
+                        self.err_box.set_text(fields[0])
                         #self.draw_all()
                     if action=='GRS':
                         self.rooms_obj.make_lst(pickle.loads(fields[0].encode()))
-                        self.rooms_obj.err_box.set_text('get refresh')
+                        self.err_box.set_text('get refresh')
                         #self.draw_all()
                     if action == 'JRI':
-                        self.rooms_obj.err_box.set_text(fields[0])
-                        self.rooms_obj.joined=True
-                        #self.draw_all()
+                        if fields[0]=='Successful':
+                            self.err_box.set_text(fields[0])
+                            self.rooms_obj.joined=True
                     if action=='ERR':
                         self.err_box.set_text(fields[0])
-                        self.draw_all()
             except socket.timeout:
                 continue
             except Exception as e:
                 print("Listener encountered error:", e)
-                self.err_box.set_text(e)
-                self.draw_all()
+                #self.err_box.set_text(e)
+                #self.draw_all()
                 break
 
 

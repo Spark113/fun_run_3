@@ -11,7 +11,6 @@ class connect():
         self.server_port = InputBox(200, 260, 300, 40, True, placeholder='3001')
         self.connect_btn = Buttom(300, 330, 100, 40, True, 'Connect')
         self.exit_btn = Buttom(300, 460, 100, 40, True, 'Exit')
-        self.err_box = TextBox(200, 400, 300, 40, True)
         #self.conected=False
 
     def attempt_connect(self,server_ip,server_port):
@@ -19,7 +18,7 @@ class connect():
             self.controller.sock.connect((server_ip, int(server_port)))
             self.controller.sock.settimeout(1)
             self.controller.conected = True
-            self.err_box.set_text('conected')
+            self.controller.err_box.set_text('conected')
             self.controller.listener.start()
         except Exception as err:
             print(err)
@@ -54,6 +53,6 @@ class connect():
         self.server_ip.draw(self.controller.screen)
         self.server_port.draw(self.controller.screen)
         self.connect_btn.draw(self.controller.screen)
-        self.controller.exit_btn.draw(self.controller.screen)
-        self.err_box.draw(self.controller.screen)
+        self.exit_btn.draw(self.controller.screen)
+        self.controller.err_box.draw(self.controller.screen)
         pygame.display.flip()

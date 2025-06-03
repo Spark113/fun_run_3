@@ -13,7 +13,6 @@ class room():
         self.refresh_btn = Buttom(100, 500, 150, 40, True, 'refresh')
         self.make_room_btn = Buttom(500, 500, 150, 40, True, 'make room')
         self.room_id = InputBox(450, 550, 240, 40, True, placeholder='room name')
-        self.err_box = TextBox(200, 400, 300, 40, True)
         self.exit_btn = Buttom(300, 460, 100, 40, True, 'Exit')
         self.rooms_lst=[]
         self.joined=False
@@ -66,8 +65,8 @@ class room():
         self.refresh_btn.draw(self.controller.screen)
         self.make_room_btn.draw(self.controller.screen)
         self.room_id.draw(self.controller.screen)
-        self.controller.exit_btn.draw(self.controller.screen)
-        self.err_box.draw(self.controller.screen)
+        self.exit_btn.draw(self.controller.screen)
+        self.controller.err_box.draw(self.controller.screen)
         start_x=300
         start_y = 50
         for i in self.rooms_lst:

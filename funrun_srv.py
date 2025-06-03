@@ -196,6 +196,8 @@ def handle_client(sock,tid,addr):
                 else:
                     send_with_size(sock, to_send.encode())
             if to_send=='bye':
+                if user_name1 in connected:
+                    connected.remove(user_name1)
                 finish=True
                 print('bye')
 
