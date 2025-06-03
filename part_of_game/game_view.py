@@ -20,11 +20,13 @@ class print_game():#
         self.exit_btn = Buttom(500, 10, 100, 40, True, 'Exit')
         self.key_down=False
         self.last_key = None
-        self.solid_color = (0, 0, 0)  # black
-        self.map_mask = pygame.mask.from_threshold(self.controller.map_img, self.solid_color, (10, 10, 10))
+        self.map_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))
+        self.white_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))#get the withe part
+        self.map_mask = self.white_mask.copy()
+        self.map_mask.invert()#get every thing except the white part
         self.player_mask = pygame.mask.from_surface(self.controller.player_img)
         self.add_left_right=3
-        self.add_up=100
+        self.add_up=200
         self.down=False
 
     def print_map(self):
@@ -41,67 +43,26 @@ class print_game():#
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.controller.finish = True
-
-                if event.type==pygame.KEYUP:
-                    #print('key up')
-                    self.key_down=False
-
-                if event.type == pygame.KEYDOWN or self.key_down:
-                    if self.key_down:
-                        if self.last_key==pygame.K_d:
-                            if not self.col(self.player_x+self.add_left_right, self.player_y):
-                                self.player_x+=self.add_left_right
-                                print('going right')
-                            else:
-                                self.go_over_x(1)
-                        if self.last_key==pygame.K_a:
-                            if self.player_x>0:
-                                if not self.col(self.player_x-self.add_left_right, self.player_y):
-                                    self.player_x-=self.add_left_right
-                                    print('going left')
-                                else:
-                                    self.go_over_x(-1)
-                        if self.last_key==pygame.K_w:
-                            if not self.col(self.player_x, self.player_y-self.add_up) and not self.in_air:
-                                self.player_y -= self.add_up
-                                self.camera_y -= self.add_up
-                                self.in_air = True
-                        if self.last_key==pygame.K_s:
-                            if not self.col(self.player_x, self.player_y+10):
-                                self.player_y += 10
-                                self.camera_y += 10
+                key=pygame.key.get_pressed()
+                if key[pygame.K_d]:
+                    if not self.col(self.player_x + self.add_left_right, self.player_y):
+                        self.player_x += self.add_left_right
+                        #print('going right')
                     else:
-
-                        if event.key==pygame.K_d:
-                            print('here',self.col(self.player_x+self.add_left_right,self.player_y))
-                            if not self.col(self.player_x+self.add_left_right,self.player_y):
-                                self.player_x+=self.add_left_right
-                                self.last_key=event.key
-                                print('going right')
-                            else:
-                                self.go_over_x(1)
-                        if event.key==pygame.K_a:
-                            self.last_key = event.key
-                            if self.player_x>0:
-                                if not self.col(self.player_x - self.add_left_right, self.player_y):
-                                    self.player_x-=self.add_left_right
-                                    print('going left')
-                                else:
-                                    self.go_over_x(-1)
-                        if event.key==pygame.K_w:
-                            if not self.col(self.player_x, self.player_y-self.add_up) and not self.in_air:
-                                self.last_key = event.key
-                                self.player_y -= self.add_up
-                                self.camera_y -= self.add_up
-                                self.in_air=True
-                                print('going up')
-                        if event.key == pygame.K_s:
-                            if not self.col(self.player_x, self.player_y+10):
-                                self.last_key = event.key
-                                self.player_y += 10
-                                self.camera_y += 10
-                                print('going down')
-                    self.key_down = True
+                        self.go_over_x(1)
+                if key[pygame.K_a]:
+                    if self.player_x > 0:
+                        if not self.col(self.player_x - self.add_left_right, self.player_y):
+                            self.player_x -= self.add_left_right
+                            #print('going left')
+                        else:
+                            self.go_over_x(-1)
+                if key[pygame.K_w]:
+                    if not self.col(self.player_x, self.player_y - self.add_up) and not self.in_air:
+                        self.player_y -= self.add_up
+                        self.camera_y -= self.add_up
+                        self.in_air = True
+                        #print('going up')
 
                 if event.type==pygame.MOUSEBUTTONDOWN:
                     if self.exit_btn.is_clicked(event.pos):
@@ -146,9 +107,7 @@ class print_game():#
                 self.camera_y-=i
                 self.player_x+=(self.add_left_right*r_l)
                 self.camera_x+=(self.add_left_right*r_l)
-                print('ok')
                 break
-        print('not ok')
     def go_down(self,steps=10):
         for i in range(1,steps):
             if not self.col(self.player_x,self.player_y+i):

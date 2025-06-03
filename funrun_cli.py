@@ -31,7 +31,9 @@ class Game():
         pygame.display.set_caption('fun run game')
         self.img_start = pygame.image.load('start.png').convert()
         self.player_img = pygame.image.load('among_us.png').convert_alpha()
-        self.map_img = pygame.image.load('map.png').convert()
+        self.map_img = pygame.image.load('map2.png').convert()
+        #self.map_img = pygame.image.load('mask_map.png').convert()
+        self.mask_map_img=pygame.image.load('mask_map.png').convert()
         self.screen.blit(self.img_start, (0, 0))
         self.clock = pygame.time.Clock()
         self.refresh = 60
@@ -49,7 +51,6 @@ class Game():
         self.login_obj=log(self)
         self.rooms_obj=room(self)
         self.run_game=print_game(self)
-
         print('start')
         if not self.finish:
             self.connect_obj.connect_to_srv()
