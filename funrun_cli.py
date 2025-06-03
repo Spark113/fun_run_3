@@ -19,7 +19,7 @@ from part_of_game.rooms import room
 from part_of_game.game_view import print_game
 class Game():
     def __init__(self):
-        """py game"""
+        """py game"""#
         self.screen_width = 700
         self.screen_hight = 700
         pygame.init()

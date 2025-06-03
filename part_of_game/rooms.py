@@ -7,7 +7,7 @@ from encrption.tcp_by_size import send_with_size,recv_by_size
 
 
 class room():
-    def __init__(self, controller):
+    def __init__(self, controller):#
         pygame.init()
         self.controller = controller
         self.refresh_btn = Buttom(100, 500, 150, 40, True, 'refresh')

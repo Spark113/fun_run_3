@@ -6,7 +6,7 @@ import threading
 
 
 
-class run_class():
+class run_class():#
     def __init__(self,id):
         self.room_id=id
         self.players={}

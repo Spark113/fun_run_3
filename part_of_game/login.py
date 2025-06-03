@@ -8,7 +8,7 @@ from encrption.TCP_AES import Encrypt_AES,Decrypt_AES
 import os
 
 class log():
-    def __init__(self, controller):
+    def __init__(self, controller):#
         pygame.init()
         self.controller = controller
         self.user_box = InputBox(200, 200, 300, 40, True, placeholder='Username')

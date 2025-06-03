@@ -4,7 +4,7 @@ from ui_elements.input_box import InputBox
 from ui_elements.text_box import TextBox
 from ui_elements.buttom import Buttom
 
-class print_game():
+class print_game():#
     def __init__(self,controller):
         pygame.init()
         self.controller=controller
