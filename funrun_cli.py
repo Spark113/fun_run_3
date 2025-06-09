@@ -1,6 +1,8 @@
 import pickle
 import os
+from multiprocessing.reduction import duplicate
 
+from pandas.core.algorithms import duplicated
 
 from encrption.RSA import RSA_CLASS
 from encrption.tcp_by_size import send_with_size, recv_by_size
@@ -34,6 +36,7 @@ class Game():
         self.map_img = pygame.image.load('map2.png').convert()
         #self.map_img = pygame.image.load('mask_map.png').convert()
         self.mask_map_img=pygame.image.load('mask_map.png').convert()
+        self.saw_blade_img=pygame.image.load('saw_blade2.png').convert_alpha()
         self.screen.blit(self.img_start, (0, 0))
         self.clock = pygame.time.Clock()
         self.refresh = 60
@@ -44,7 +47,7 @@ class Game():
         self.sock=socket.socket()
         self.listener = threading.Thread(target=self.listen)
         self.finish=False
-        self.can_close=False
+        self.can_close=True
         self.finish_login=False
         self.rsa_object=RSA_CLASS()
         self.server_key=None
@@ -57,6 +60,7 @@ class Game():
             self.connect_obj.connect_to_srv()
         if not self.finish:
             self.login_obj.login_loop()
+        self.can_close = False
         if not self.finish:
             self.rooms_obj.show_rooms()
         if not self.finish:
@@ -81,7 +85,7 @@ class Game():
                 self.listener.join()
                 self.sock.close()
             pygame.quit()
-
+            print('got out')
         except Exception as err:
             if self.debug:
                 print('--------------------------------------------------')
@@ -110,7 +114,13 @@ class Game():
                     action = data[:3]
                     fields = data[4:]
                     d = pickle.loads(fields)
+                    o={}
+                    for k,v in d.items():
+                        o[k]=(0,0)
+                    print('o',o)
+                    print('d', d)
                     self.run_game.players=d
+                    self.run_game.obsticles=o
                 else:
                     data=data.decode()
                     action = data[:3]
@@ -124,7 +134,11 @@ class Game():
 
                     elif action=='UPP':
                         self.run_game.players[fields[2]]=((fields[0],fields[1]))
-
+                    elif action=='UPO':
+                        if len(fields)>1:
+                            self.run_game.obsticles[fields[2]]=(int(fields[0]),int(fields[1]))
+                        else:
+                            print(fields[0])
                     elif action=='SUP':
                         self.err_box.set_text(fields[0])
 
@@ -164,7 +178,7 @@ class Game():
                 continue
             except Exception as e:
                 print("Listener encountered error:", e)
-                #self.err_box.set_text(e)
+                self.err_box.set_text(e)
                 #self.draw_all()
                 break
 

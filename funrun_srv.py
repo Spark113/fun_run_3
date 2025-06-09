@@ -88,18 +88,22 @@ def rsa_key(public_key,rsa_obj):
 
 def exit(user_name1):
     global connected
+    global users_rooms
     try:
         print(user_name1, connected)
         if user_name1 in connected:
+            print('a')
             connected.remove(user_name1)
+            print(user_name1,users_rooms.keys())
             if user_name1 in users_rooms.keys():
                 print(users_rooms[user_name1].del_player(user_name1))
                 del users_rooms[user_name1]
             print(user_name1 in users_rooms.keys(), 'users_rooms')
         return 'BYE~'
     except Exception as err:
-        print(err)
+        print('err',err)
         return err
+
 def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
     try:
         global connected
@@ -159,10 +163,11 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
                 users_rooms[user_name1].update_pos_exept_me(user_name1,int(request[1]),int(request[2]))
                 return 'UPD~Successful', None, user_name1, key
             elif request_code == 'GOP':#get others players
-                dic=users_rooms[user_name1].get_players(user_name1)
-                return b'GOP~'+dic, None, user_name1, key
+                dic_p=users_rooms[user_name1].get_players(user_name1)
+                #dic_o=users_rooms[user_name1].get_obstcles(user_name1)
+                return b'GOP~'+dic_p, None, user_name1, key
             elif request_code == 'UPO':#update obsticle
-                users_rooms[user_name1].update_obsticle(request[1],int(request[2]),int(request[3]))
+                users_rooms[user_name1].update_obsticle(user_name1,int(request[1]),int(request[2]))
                 return 'UPO~Successful', None, user_name1, key
         else:
             print(connected,user_name1)
@@ -207,11 +212,13 @@ def handle_client(sock,tid,addr):
                 if type(to_send)==bytes:
                     send_with_size(sock, to_send)
                 else:
-                    send_with_size(sock, to_send.encode())
+                    send_with_size(sock, str(to_send).encode())
             if to_send=='BYE~':
+                #exit(user_name1)
                 finish=True
                 print(finish,'finish')
                 print('bye')
+
 
         except socket.timeout:
             pending = AMessages.get_async_messages_to_send(sock)
