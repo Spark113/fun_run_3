@@ -3,13 +3,14 @@ import pygame
 from ui_elements.input_box import InputBox
 from ui_elements.text_box import TextBox
 from ui_elements.buttom import Buttom
+from encrption.tcp_by_size import send_with_size,recv_by_size
 
 class print_game():#
     def __init__(self,controller):
         pygame.init()
         self.controller=controller
         self.player_x=0
-        self.player_y=250
+        self.player_y=420
         self.camera_x=0
         self.camera_y=0
         self.camera_width=700
@@ -26,8 +27,9 @@ class print_game():#
         self.map_mask.invert()#get every thing except the white part
         self.player_mask = pygame.mask.from_surface(self.controller.player_img)
         self.add_left_right=3
-        self.add_up=200
+        self.add_up=30
         self.down=False
+        self.players={}
 
     def print_map(self):
         self.camera_x = max(0,self.player_x-self.controller.screen_width//2)
@@ -35,10 +37,17 @@ class print_game():#
         self.camera_view = pygame.Rect(self.camera_x, self.camera_y, self.controller.screen_width, self.controller.screen_hight)
         self.controller.screen.blit(self.controller.map_img, (0, 0),self.camera_view)
         self.controller.screen.blit(self.controller.player_img, (self.player_x-self.camera_x, self.player_y-self.camera_y))
+        for k,v in self.players.items():
+            self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
         self.exit_btn.draw(self.controller.screen)
         pygame.display.flip()
 
     def game(self):
+        max_x=10
+        max_y=10
+        val_x=0
+        val_y=1
+        moved=False
         while not self.controller.finish:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -46,23 +55,22 @@ class print_game():#
                 key=pygame.key.get_pressed()
                 if key[pygame.K_d]:
                     if not self.col(self.player_x + self.add_left_right, self.player_y):
-                        self.player_x += self.add_left_right
-                        #print('going right')
+                        if val_x<max_x:
+                            val_x+=self.add_left_right
                     else:
                         self.go_over_x(1)
                 if key[pygame.K_a]:
                     if self.player_x > 0:
                         if not self.col(self.player_x - self.add_left_right, self.player_y):
-                            self.player_x -= self.add_left_right
-                            #print('going left')
+                            if val_x > (max_x*-1):
+                                val_x -= self.add_left_right
                         else:
                             self.go_over_x(-1)
                 if key[pygame.K_w]:
                     if not self.col(self.player_x, self.player_y - self.add_up) and not self.in_air:
-                        self.player_y -= self.add_up
-                        self.camera_y -= self.add_up
+                        val_y-= self.add_up
+                        print('here',val_y)
                         self.in_air = True
-                        #print('going up')
 
                 if event.type==pygame.MOUSEBUTTONDOWN:
                     if self.exit_btn.is_clicked(event.pos):
@@ -71,22 +79,41 @@ class print_game():#
                         break
                     else:
                         print(event.pos)
-            if self.in_air:
-                if not self.col(self.player_x, self.player_y+1):
-                    self.player_y+=10
-                    self.camera_y+=10
-                elif not self.go_down():
-                    self.in_air=False
+            if val_y!=10:
+                val_y+=1
+            if val_x!=0:
+                if not self.in_air:
+                    if val_x>0:
+                        val_x-=1
+                    else:
+                        val_x+=1
+                else:
+                    if val_x>0:
+                        val_x=5
+                    else:
+                        val_x=-5
+            if not self.col(self.player_x, self.player_y+val_y):
+                self.player_y +=val_y
+                self.camera_y +=val_y
+                moved=True
+                #print(self.col(self.player_x, self.player_y+val_y),'in y')
             else:
-                if not self.col(self.player_x, self.player_y+1):
-                    self.player_y+=10
-                    self.camera_y +=10
-                    self.down=True
-                elif self.down:
-                    pass
-                    self.down=self.go_down()
-
-
+                self.in_air=False
+                #print(self.col(self.player_x, self.player_y + val_y), 'in y')
+            if not self.col(self.player_x+val_x, self.player_y):
+                self.player_x +=val_x
+                if val_x!=0:
+                    moved = True
+                #print(self.col(self.player_x+val_x, self.player_y),'in x')
+            else:
+                if self.go_over_x(val_x):
+                    moved = True
+                    #print(self.go_over_x(val_x),'going down')
+            #print(moved,'moved')
+            if moved:#(self.player_x-self.camera_x, self.player_y-self.camera_y)
+                send_with_size(self.controller.sock, (f'UPD~{str(self.player_x)}~{str(self.player_y)}').encode())
+                moved=False
+                #print(moved,'moved')
             if not self.controller.finish:
                 self.print_map()
 
@@ -100,14 +127,15 @@ class print_game():#
         #print('False')
         return False
 
-    def go_over_x(self,r_l,steps=15):#r_l is right or left if it is left it will be -1
+    def go_over_x(self,val_x,steps=15):#r_l is right or left if it is left it will be -1
         for i in range(1,steps):
-            if not self.col(self.player_x+(self.add_left_right*r_l),self.player_y-i):
+            if not self.col(self.player_x+val_x,self.player_y-i):
                 self.player_y-=i
                 self.camera_y-=i
-                self.player_x+=(self.add_left_right*r_l)
-                self.camera_x+=(self.add_left_right*r_l)
-                break
+                self.player_x+=val_x
+                self.camera_x+=val_x
+                return True
+        return False
     def go_down(self,steps=10):
         for i in range(1,steps):
             if not self.col(self.player_x,self.player_y+i):

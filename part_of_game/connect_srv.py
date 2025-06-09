@@ -23,7 +23,7 @@ class connect():#
         except Exception as err:
             print(err)
             self.controller.conected = False
-            self.err_box.set_text('could not connect')
+            self.controller.err_box.set_text('could not connect')
             self.draw_all()
 
     def connect_to_srv(self):

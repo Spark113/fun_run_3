@@ -60,6 +60,7 @@ def sign_up(username, password):
 def login(username, password, sock):
     try:
         global AMessages
+        global connected
         load_users()
         if username not in users:
             return "LOG~User not found", False
@@ -85,9 +86,22 @@ def rsa_key(public_key,rsa_obj):
     key_enc = rsa_obj.encrypt_RSA(key)
     return key_enc,key
 
+def exit(user_name1):
+    global connected
+    try:
+        print(user_name1, connected)
+        if user_name1 in connected:
+            connected.remove(user_name1)
+            if user_name1 in users_rooms.keys():
+                print(users_rooms[user_name1].del_player(user_name1))
+                del users_rooms[user_name1]
+            print(user_name1 in users_rooms.keys(), 'users_rooms')
+        return 'BYE~'
+    except Exception as err:
+        print(err)
+        return err
 def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
     try:
-        global connected
         global connected
         global rooms
         global users_rooms
@@ -101,6 +115,7 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
             user_name = Decrypt_AES(key, iv, base64.b64decode(request[1])).decode()
             password1 = Decrypt_AES(key, iv, base64.b64decode(request[2])).decode()
             reply, logged = login(user_name, password1, sock)
+            print(user_name1, connected)
             return reply, logged, user_name, key
 
         elif request_code == 'SGU':
@@ -108,10 +123,9 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
             return reply, None, user_name1, key
 
         elif request_code == 'BYE':
-            if user_name1 in connected:
-                connected.remove(user_name1)
+            reply=exit(user_name1)
             finish = True
-            return 'bye',None,user_name1, key
+            return reply,None,user_name1, key
 
         elif request_code == 'GSR':
             public_key_b64 = request[1]
@@ -124,7 +138,7 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
 
         if user_name1 in connected:#if he is logged in only then he can do something if not he have to login in
             if request_code == 'MRS':#make rooms
-                rooms.append(run_class(request[1]))#request[1]=id
+                rooms.append(run_class(AMessages,request[1]))#request[1]=id
                 return 'MRS~Successful',None, user_name1, key
 
             elif request_code == 'GRS':#get rooms
@@ -141,12 +155,12 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
                         room.update_player(user_name1,0,0)
                         users_rooms[user_name1]=room
                 return 'JRI~Successful', None, user_name1, key
-            elif request_code == 'UPP':#update player
-                users_rooms[user_name1].update_player(user_name1,int(request[1]),int(request[2]))
+            elif request_code == 'UPD':#update player
+                users_rooms[user_name1].update_pos_exept_me(user_name1,int(request[1]),int(request[2]))
                 return 'UPD~Successful', None, user_name1, key
-            elif request_code == 'GOP':#get others postion
-                dic=users_rooms[user_name1].get_all_exept_me(user_name1)
-                return b'GOP~'+pickle.dumps(dic), None, user_name1, key
+            elif request_code == 'GOP':#get others players
+                dic=users_rooms[user_name1].get_players(user_name1)
+                return b'GOP~'+dic, None, user_name1, key
             elif request_code == 'UPO':#update obsticle
                 users_rooms[user_name1].update_obsticle(request[1],int(request[2]),int(request[3]))
                 return 'UPO~Successful', None, user_name1, key
@@ -178,12 +192,11 @@ def handle_client(sock,tid,addr):
             byte_data = recv_by_size(sock)
             if byte_data == b'':
                 print('Seems client disconnected')
-                if user_name1 in connected:
-                    connected.remove(user_name1)
+                exit(user_name1)
                 break
 
             try:
-                to_send, loged, user_name1, key = protocol_build_reply(byte_data, sock, user_name1, finish, key,rsa_obj)
+                to_send, logged, user_name1, key = protocol_build_reply(byte_data, sock, user_name1, finish, key,rsa_obj)
             except Exception as err:
                 print(to_send)
                 print(err)
@@ -195,10 +208,9 @@ def handle_client(sock,tid,addr):
                     send_with_size(sock, to_send)
                 else:
                     send_with_size(sock, to_send.encode())
-            if to_send=='bye':
-                if user_name1 in connected:
-                    connected.remove(user_name1)
+            if to_send=='BYE~':
                 finish=True
+                print(finish,'finish')
                 print('bye')
 
         except socket.timeout:

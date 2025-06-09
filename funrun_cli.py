@@ -44,6 +44,7 @@ class Game():
         self.sock=socket.socket()
         self.listener = threading.Thread(target=self.listen)
         self.finish=False
+        self.can_close=False
         self.finish_login=False
         self.rsa_object=RSA_CLASS()
         self.server_key=None
@@ -74,8 +75,10 @@ class Game():
             self.err_box.set_text('shoting down')
             self.finish = True
             if self.conected:
-                self.listener.join()
                 send_with_size(self.sock, b'BYE')
+                while not self.can_close:
+                    continue
+                self.listener.join()
                 self.sock.close()
             pygame.quit()
 
@@ -103,6 +106,11 @@ class Game():
                     print(d)
                     self.rooms_obj.make_lst(d)
                     self.err_box.set_text('get refresh')
+                elif data.startswith(b'GOP~'):
+                    action = data[:3]
+                    fields = data[4:]
+                    d = pickle.loads(fields)
+                    self.run_game.players=d
                 else:
                     data=data.decode()
                     action = data[:3]
@@ -114,10 +122,13 @@ class Game():
                         else:
                             self.err_box.set_text(fields[0])
 
-                    if action=='SUP':
+                    elif action=='UPP':
+                        self.run_game.players[fields[2]]=((fields[0],fields[1]))
+
+                    elif action=='SUP':
                         self.err_box.set_text(fields[0])
 
-                    if action=='FRS':
+                    elif action=='FRS':
                         try:
                             rsa_encrypted_key = base64.b64decode(fields[0])
                             key = self.rsa_object.decrypt_RSA(rsa_encrypted_key)
@@ -133,19 +144,22 @@ class Game():
                                 print(err)
                                 print('--------------------------------------------------')
 
-                    if action=='MRS':
+                    elif action=='MRS':
                         self.err_box.set_text(fields[0])
                         #self.draw_all()
-                    if action=='GRS':
+                    elif action=='GRS':
                         self.rooms_obj.make_lst(pickle.loads(fields[0].encode()))
                         self.err_box.set_text('get refresh')
                         #self.draw_all()
-                    if action == 'JRI':
+                    elif action == 'JRI':
                         if fields[0]=='Successful':
                             self.err_box.set_text(fields[0])
                             self.rooms_obj.joined=True
-                    if action=='ERR':
+                            send_with_size(self.sock,('GOP~').encode())
+                    elif action=='ERR':
                         self.err_box.set_text(fields[0])
+                    elif action=='BYE':
+                        self.can_close=True
             except socket.timeout:
                 continue
             except Exception as e:
