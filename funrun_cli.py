@@ -102,6 +102,8 @@ class Game():
                 data = recv_by_size(self.sock)
                 if data==b'':
                     print('server disconnected')
+                    self.can_close=True
+                    self.exit()
                     break
                 if data.startswith(b'GRS~'):
                     action = data[:3]
@@ -178,6 +180,10 @@ class Game():
                         self.can_close=True
             except socket.timeout:
                 continue
+            except ConnectionResetError as e:
+                print(e)
+                self.can_close=True
+                self.exit()
             except Exception as e:
                 print("Listener encountered error:", e)
                 self.err_box.set_text(e)
