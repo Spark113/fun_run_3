@@ -80,9 +80,11 @@ class Game():
             self.err_box.set_text('shoting down')
             self.finish = True
             if self.conected:
-                send_with_size(self.sock, b'BYE')
+                send_with_size(self.sock, b'BYE~')
+                print('sent bye',self.can_close)
                 while not self.can_close:
                     continue
+                print('recv bye')
                 self.listener.join()
                 self.sock.close()
             pygame.quit()
