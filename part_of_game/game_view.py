@@ -21,13 +21,15 @@ class print_game():#
         self.exit_btn = Buttom(500, 10, 100, 40, True, 'Exit')
         self.key_down=False
         self.last_key = None
-        self.map_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))
+        #self.map_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))
         self.white_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))#get the withe part
+        self.white_speed_musk=pygame.mask.from_threshold(self.controller.speed_musk_img, (255, 255, 255), (1, 1, 1))
         self.map_mask = self.white_mask.copy()
+        self.speed_musk=self.white_speed_musk.copy()
         self.map_mask.invert()#get every thing except the white part
+        self.speed_musk.invert()
         self.player_mask = pygame.mask.from_surface(self.controller.player_img)
         self.saw_blade_mask=pygame.mask.from_surface(self.controller.saw_blade_img)
-        #self.saw_blade=controller.saw_blade_img
         self.obsticle=False
         self.obsticle_x=0
         self.obsticle_y=0
@@ -49,8 +51,6 @@ class print_game():#
         for k,v in self.players.items():
             self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
         for k,v in self.obsticles.items():
-            #print('playrs', self.players)
-            #print('obsticles', self.obsticles)
             if int(v[0]) !=0 and int(v[1])!=0:
                 self.controller.screen.blit(self.controller.saw_blade_img,(int(v[0])-self.camera_x, int(v[1])-self.camera_y))
         if self.obsticle_x!=0 and self.obsticle_y!=0:
@@ -166,6 +166,7 @@ class print_game():#
             if self.col_obsticle():
                 print('col')
                 self.cant_move=True
+            val_x=self.col_speed(val_x,self.player_x,self.player_y)
             if not self.controller.finish:
                 self.print_map()
 
@@ -186,7 +187,10 @@ class print_game():#
                 blade_rect = pygame.Rect(int(v[0]),int(v[1]), blade_w, blade_h)
                 if player_rect.colliderect(blade_rect):
                     return True
-
+    def col_speed(self,val,x,y):
+        if self.speed_musk.overlap(self.player_mask, (x, y)):
+            return val
+        return 50
     def go_over_x(self,val_x,steps=15):
         for i in range(1,steps):
             if not self.col(self.player_x+val_x,self.player_y-i):
@@ -196,6 +200,7 @@ class print_game():#
                 self.camera_x+=val_x
                 return True
         return False
+
     def go_down(self,steps=10):
         for i in range(1,steps):
             if not self.col(self.player_x,self.player_y+i):

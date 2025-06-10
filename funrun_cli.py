@@ -36,6 +36,7 @@ class Game():
         self.map_img = pygame.image.load('map2.png').convert()
         #self.map_img = pygame.image.load('mask_map.png').convert()
         self.mask_map_img=pygame.image.load('mask_map.png').convert()
+        self.speed_musk_img=pygame.image.load('speed_musk.png').convert()
         self.saw_blade_img=pygame.image.load('saw_blade2.png').convert_alpha()
         self.screen.blit(self.img_start, (0, 0))
         self.clock = pygame.time.Clock()
@@ -138,7 +139,8 @@ class Game():
                         if len(fields)>1:
                             self.run_game.obsticles[fields[2]]=(int(fields[0]),int(fields[1]))
                         else:
-                            print(fields[0])
+                            #print(fields[0])
+                            continue
                     elif action=='SUP':
                         self.err_box.set_text(fields[0])
 
