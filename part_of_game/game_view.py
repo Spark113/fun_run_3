@@ -55,6 +55,7 @@ class print_game():#
         # self.cant_move_cnt=45
         self.slide=False
         self.slide_cnt=100
+        self.end_game=False
     def print_map(self):
 
         self.camera_x = max(0,self.player_x-self.controller.screen_width//2)
@@ -67,7 +68,7 @@ class print_game():#
             if self.slide_cnt==0:
                 self.slide_cnt=100
                 self.slide=False
-                self.player_y-=15
+                self.player_y-=20
             #print('cnt',self.slide_cnt)
         else:
             self.controller.screen.blit(self.controller.player_img, (self.player_x-self.camera_x, self.player_y-self.camera_y))
@@ -174,7 +175,7 @@ class print_game():#
             obsticle=False
             rotate_cnt=100
             rotated=False
-            while not self.controller.finish:
+            while not self.controller.finish and not self.end_game:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.controller.finish = True
@@ -216,7 +217,7 @@ class print_game():#
                             self.controller.exit()
                             break
                         else:
-                            print(event.pos)
+                            print(self.player_x)
                 if not self.cant_move:
                     if val_y!=10:
                         val_y+=1
@@ -283,6 +284,10 @@ class print_game():#
                     print('col')
                     self.cant_move=True
                 val_x=self.col_speed(val_x,self.player_x,self.player_y)
+
+                if self.player_x >self.controller.map_img.get_width()-400:
+                    print('finish')
+                    self.cant_move=True
                 if not self.controller.finish:
                     self.print_map()
 

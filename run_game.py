@@ -15,6 +15,7 @@ class run_class():#
         #self.t.start()
         self.stop=False
         self.playing=False
+        self.leaderbord_dict={}
     def update_player(self,name,x,y):
         self.players[name]=((x,y))
         self.playing=True
@@ -67,3 +68,10 @@ class run_class():#
             if k != name:
                 self.AMessages.put_msg_by_user(f'UPO~{x}~{y}~{name}', k)  # UPP = update pos player
                 #print(k)
+    def leaderbord(self,name,time):
+        self.leaderbord_dict[name]=time
+        self.leaderbord_dict=sorted(self.leaderbord_dict)
+        if len(self.leaderbord_dict)==len(self.players):
+            p_dict=pickle.dumps(self.leaderbord_dict)
+            for k, v in self.players.items():
+                self.AMessages.put_msg_by_user(b'UPL~'+p_dict, k)  # UPP = update players leaderbord

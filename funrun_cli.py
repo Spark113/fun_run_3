@@ -34,6 +34,7 @@ class Game():
         self.img_start = pygame.image.load('start.png').convert()
         self.player_img = pygame.image.load('among_us.png').convert_alpha()
         self.map_img = pygame.image.load('map2.png').convert()
+        print(self.map_img.get_width())
         #self.map_img = pygame.image.load('mask_map.png').convert()
         self.mask_map_img=pygame.image.load('map2_musk.png').convert()
         self.speed_musk_img=pygame.image.load('speed_musk.png').convert()
