@@ -19,6 +19,7 @@ from part_of_game.connect_srv import connect
 from part_of_game.login import log
 from part_of_game.rooms import room
 from part_of_game.game_view import print_game
+from part_of_game.leader_board import board
 class Game():
     def __init__(self):
         """py game"""#
@@ -57,6 +58,7 @@ class Game():
         self.login_obj=log(self)
         self.rooms_obj=room(self)
         self.run_game=print_game(self)
+        self.board_obj=board(self)
         print('start')
         if not self.finish:
             self.connect_obj.connect_to_srv()
@@ -68,6 +70,7 @@ class Game():
         if not self.finish:
             self.run_game.game()
         print('done')#works now i need to do the game
+        self.board_obj.board_draw()
         pygame.quit()
 
     def main_game(self):
@@ -127,6 +130,12 @@ class Game():
                     print('d', d)
                     self.run_game.players=d
                     self.run_game.obsticles=o
+                elif data.startswith(b'UPL~'):
+                    action = data[:3]
+                    fields = data[4:]
+                    d = pickle.loads(fields)
+                    print('d', d)
+                    self.run_game.leader_board=d
                 else:
                     data=data.decode()
                     action = data[:3]
@@ -151,7 +160,6 @@ class Game():
                             continue
                     elif action=='SUP':
                         self.err_box.set_text(fields[0])
-
                     elif action=='FRS':
                         try:
                             rsa_encrypted_key = base64.b64decode(fields[0])

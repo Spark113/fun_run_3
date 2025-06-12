@@ -48,6 +48,7 @@ class print_game():#
         self.players={}
         self.players_slide={}
         self.obsticles={}
+        self.leader_board=None
         self.cant_move = False
         self.timer=TextBox(5,5,200,40,True,'timer')
         # self.start_time=None
@@ -286,8 +287,10 @@ class print_game():#
                 val_x=self.col_speed(val_x,self.player_x,self.player_y)
 
                 if self.player_x >self.controller.map_img.get_width()-400:
-                    print('finish')
+                    #print('finish')
                     self.cant_move=True
+                    send_with_size(self.controller.sock,(f'UPL~{str(time.time()-self.start_time)}').encode())
+                    self.end_game=True
                 if not self.controller.finish:
                     self.print_map()
 

@@ -4,6 +4,7 @@ import pygame
 import threading
 import pickle
 import math
+import sys
 
 class run_class():#
     def __init__(self,AMessages,id):
@@ -61,17 +62,34 @@ class run_class():#
         for k,v in self.players.items():
             if k != name:
                 self.AMessages.put_msg_by_user(f'UPP~{x}~{y}~{name}', k)  # UPP = update pos player
-                #print(k)
 
     def update_obsticle(self,name,x,y):
         for k, v in self.players.items():
             if k != name:
                 self.AMessages.put_msg_by_user(f'UPO~{x}~{y}~{name}', k)  # UPP = update pos player
-                #print(k)
     def leaderbord(self,name,time):
         self.leaderbord_dict[name]=time
-        self.leaderbord_dict=sorted(self.leaderbord_dict)
-        if len(self.leaderbord_dict)==len(self.players):
+        self.leaderbord_dict=self.sort_dict(self.leaderbord_dict)
+        print(len(self.leaderbord_dict.keys()),len(self.players.keys()))
+        print(self.leaderbord_dict,self.players)
+        if len(self.leaderbord_dict.keys())==len(self.players.keys()):
+            print('ended here',self.leaderbord_dict)
             p_dict=pickle.dumps(self.leaderbord_dict)
             for k, v in self.players.items():
+                print('sent to: ',k)
                 self.AMessages.put_msg_by_user(b'UPL~'+p_dict, k)  # UPP = update players leaderbord
+    def sort_dict(self,d:dict):
+        sorted_dict={}
+        while len(d.keys())>0:
+            min_key=self.find_min(d)
+            sorted_dict[min_key]=d[min_key]
+            del d[min_key]
+        return sorted_dict
+    def find_min(self,d):
+        min_key=None
+        min_val=sys.maxsize
+        for k, v in d.items():
+            if v<min_val:
+                min_key=k
+                min_val=v
+        return min_key

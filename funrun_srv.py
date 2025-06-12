@@ -6,6 +6,7 @@ import pickle
 import hashlib
 import secrets
 import base64
+from dataclasses import fields
 
 from encrption.TCP_AES import Decrypt_AES
 from encrption.tcp_by_size import send_with_size, recv_by_size
@@ -162,6 +163,9 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
             elif request_code == 'UPD':#update player
                 users_rooms[user_name1].update_pos_exept_me(user_name1,int(request[1]),int(request[2]))
                 return 'UPD~Successful', None, user_name1, key
+            elif request_code=='UPL':
+                users_rooms[user_name1].leaderbord(user_name1,float(request[1]))
+                return 'ULL~Successful', None, user_name1, key
             elif request_code == 'GOP':#get others players
                 dic_p=users_rooms[user_name1].get_players(user_name1)
                 #dic_o=users_rooms[user_name1].get_obstcles(user_name1)
@@ -223,6 +227,7 @@ def handle_client(sock,tid,addr):
         except socket.timeout:
             pending = AMessages.get_async_messages_to_send(sock)
             for m in pending:
+                print(m)
                 send_with_size(sock, m)
             continue
         except ConnectionResetError as err:
