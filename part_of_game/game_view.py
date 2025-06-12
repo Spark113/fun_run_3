@@ -33,11 +33,12 @@ class print_game():#
         self.speed_musk.invert()
         self.player_mask = pygame.mask.from_surface(self.controller.player_img)
         self.saw_blade_mask=pygame.mask.from_surface(self.controller.saw_blade_img)
-        #self.rotated_player_counterclockwise = pygame.transform.rotate(self.controller.player_img, -90)
-        #self.rotated_player_map_counterclockwise = pygame.mask.from_surface(self.controller.rotated_player_counterclockwise)
+        self.rotated_player_counterclockwise = pygame.transform.rotate(self.controller.player_img, 90)
+        self.rotated_player_mask_counterclockwise = pygame.mask.from_surface(self.rotated_player_counterclockwise)
         self.use_player=self.controller.player_img
         self.use_player_mask=self.player_mask
         self.obsticle=False
+        self.obsticle_cnt=45
         self.obsticle_x=0
         self.obsticle_y=0
         self.add_obsticle=15
@@ -45,19 +46,40 @@ class print_game():#
         self.add_up=30
         self.down=False
         self.players={}
+        self.players_slide={}
         self.obsticles={}
         self.cant_move = False
         self.timer=TextBox(5,5,200,40,True,'timer')
-        self.start_time=None
+        # self.start_time=None
+        # self.cant_move=False
+        # self.cant_move_cnt=45
+        self.slide=False
+        self.slide_cnt=100
     def print_map(self):
 
         self.camera_x = max(0,self.player_x-self.controller.screen_width//2)
         self.camera_view.topleft = (self.camera_x, self.camera_y)
         self.camera_view = pygame.Rect(self.camera_x, self.camera_y, self.controller.screen_width, self.controller.screen_hight)
         self.controller.screen.blit(self.controller.map_img, (0, 0),self.camera_view)
-        self.controller.screen.blit(self.controller.player_img, (self.player_x-self.camera_x, self.player_y-self.camera_y))
+        if self.slide:
+            self.controller.screen.blit(self.rotated_player_counterclockwise,(self.player_x - self.camera_x, self.player_y - self.camera_y))
+            self.slide_cnt-=1
+            if self.slide_cnt==0:
+                self.slide_cnt=100
+                self.slide=False
+                self.player_y-=15
+            #print('cnt',self.slide_cnt)
+        else:
+            self.controller.screen.blit(self.controller.player_img, (self.player_x-self.camera_x, self.player_y-self.camera_y))
         for k,v in self.players.items():
-            self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
+            if k in self.players_slide.keys():
+                #print(k,self.players_slide)
+                self.controller.screen.blit(self.rotated_player_counterclockwise,(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y))
+                self.players_slide[k]-=1
+                if self.players_slide[k]==0:
+                    del self.players_slide[k]
+            else:
+                self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
         for k,v in self.obsticles.items():
             if int(v[0]) !=0 and int(v[1])!=0:
                 self.controller.screen.blit(self.controller.saw_blade_img,(int(v[0])-self.camera_x, int(v[1])-self.camera_y))
@@ -69,6 +91,74 @@ class print_game():#
         self.timer.draw(self.controller.screen)
         pygame.display.flip()
 
+    def handel_input_player(self,key,val_x,val_y,max_x):
+        print('here')
+        moved=False
+        if key[pygame.K_d]:
+            if not self.col(self.player_x + self.add_left_right, self.player_y):
+                if val_x < max_x:
+                    val_x += self.add_left_right
+            else:
+                self.go_over_x(1)
+        if key[pygame.K_a]:
+            if self.player_x > 0:
+                if not self.col(self.player_x - self.add_left_right, self.player_y):
+                    if val_x > (max_x * -1):
+                        val_x -= self.add_left_right
+                else:
+                    self.go_over_x(-1)
+        if key[pygame.K_w]:
+            if not self.col(self.player_x, self.player_y - self.add_up) and not self.in_air:
+                val_y -= self.add_up
+                self.in_air = True
+        # if key[pygame.K_s]:
+        #     if not self.col(self.player_x,self.player_y) and not rotated:
+        #         #send_with_size(self.controller.sock,'PUD~rotate')#photo upade
+        #         rotated=True
+        #         self.use_player = self.controller.player_img
+        #         self.use_player_mask = self.player_mask
+        if key[pygame.K_o]:
+            if not self.obsticle:
+                self.obsticle = True
+                self.obsticle_x = self.player_x + self.add_obsticle
+                self.obsticle_y = self.player_y
+        if not self.cant_move:
+            if val_y != 10:
+                val_y += 1
+            if val_x != 0:
+                if not self.in_air:
+                    if val_x > 0:
+                        val_x -= 1
+                    else:
+                        val_x += 1
+                else:
+                    if val_x > 0:
+                        val_x = 5
+                    else:
+                        val_x = -5
+            if not self.col(self.player_x, self.player_y + val_y):
+                self.player_y += val_y
+                self.camera_y += val_y
+                moved = True
+            else:
+                self.in_air = False
+            if not self.col(self.player_x + val_x, self.player_y):
+                self.player_x += val_x
+                if val_x != 0:
+                    moved = True
+            else:
+                if self.go_over_x(val_x):
+                    moved = True
+
+            if moved:
+                send_with_size(self.controller.sock, (f'UPD~{str(self.player_x)}~{str(self.player_y)}').encode())
+                moved = False
+
+        else:
+            self.cant_move_cnt -= 1
+            if self.cant_move_cnt == 0:
+                self.cant_move = False
+        val_x = self.col_speed(val_x, self.player_x, self.player_y)
     def game(self):
         try:
             self.start_time=time.time()
@@ -111,12 +201,15 @@ class print_game():#
                             obsticle=True
                             self.obsticle_x=self.player_x+self.add_obsticle
                             self.obsticle_y=self.player_y
-                    # if key[pygame.K_s]:
-                    #     if not self.col(self.player_x,self.player_y) and not rotated:
-                    #         #send_with_size(self.controller.sock,'PUD~rotate')#photo upade
-                    #         rotated=True
-                    #         self.use_player = self.controller.player_img
-                    #         self.use_player_mask = self.player_mask
+                    if key[pygame.K_s]:
+                        #print('cant move',self.cant_move)
+                        if not self.cant_move:
+                            #print('cant move', self.cant_move)
+                            if not self.col(self.player_x,self.player_y) and not rotated and not self.in_air:
+                                send_with_size(self.controller.sock, (f'UPD~{str(-1)}~{str(-1)}').encode())
+                                self.slide=True
+                                # self.use_player = self.controller.player_img
+                                # self.use_player_mask = self.player_mask
                     if event.type==pygame.MOUSEBUTTONDOWN:
                         if self.exit_btn.is_clicked(event.pos):
                             print('exiting')
@@ -199,9 +292,15 @@ class print_game():#
         except OSError as err:
             self.controller.exit()
             print('bye bye',err)
+
+
     def col(self,x,y):
-        if self.map_mask.overlap(self.player_mask, (x, y)):
-            return True
+        if self.slide:
+            if self.map_mask.overlap(self.rotated_player_mask_counterclockwise, (x, y)):
+                return True
+        else:
+            if self.map_mask.overlap(self.player_mask, (x, y)):
+                return True
         return False
 
     def col_obsticle(self):

@@ -35,7 +35,7 @@ class Game():
         self.player_img = pygame.image.load('among_us.png').convert_alpha()
         self.map_img = pygame.image.load('map2.png').convert()
         #self.map_img = pygame.image.load('mask_map.png').convert()
-        self.mask_map_img=pygame.image.load('mask_map.png').convert()
+        self.mask_map_img=pygame.image.load('map2_musk.png').convert()
         self.speed_musk_img=pygame.image.load('speed_musk.png').convert()
         self.saw_blade_img=pygame.image.load('saw_blade2.png').convert_alpha()
         self.screen.blit(self.img_start, (0, 0))
@@ -138,7 +138,10 @@ class Game():
                             self.err_box.set_text(fields[0])
 
                     elif action=='UPP':
-                        self.run_game.players[fields[2]]=((fields[0],fields[1]))
+                        if fields[0] =='-1' and fields[1]=='-1':
+                            self.run_game.players_slide[fields[2]]=100
+                        else:
+                            self.run_game.players[fields[2]]=((fields[0],fields[1]))
                     elif action=='UPO':
                         if len(fields)>1:
                             self.run_game.obsticles[fields[2]]=(int(fields[0]),int(fields[1]))
