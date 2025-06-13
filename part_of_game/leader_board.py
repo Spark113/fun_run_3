@@ -32,14 +32,23 @@ class board():
                 pygame.display.flip()
                 self.controller.clock.tick(self.controller.refresh)
 
+    def dict_to_lst(self,dict):
+        start_x = 100
+        start_y = 50
+        cnt = 0
+        #self.board_lst=[]
+        for k,v in dict.items():
+            self.board_lst.append(TextBox(start_x,start_y+ (cnt * 40),300,40,True,str(k)+' time: '+str(v)))
+
     def draw_all(self):
         self.controller.screen.blit(self.controller.img_start, (0, 0))
-        self.wating_for_playrs.draw(self.controller.screen)
 
         self.exit_btn.draw(self.controller.screen)
         self.controller.err_box.draw(self.controller.screen)
         if self.board_ready:
-            for i in self.rooms_lst:
+            for i in self.board_lst:
                 i.draw(self.controller.screen)
+        else:
+            self.wating_for_playrs.draw(self.controller.screen)
 
         pygame.display.flip()
