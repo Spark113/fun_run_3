@@ -129,6 +129,7 @@ class Game():
                     print('o',o)
                     print('d', d)
                     self.run_game.players=d
+                    #self.run_game.timer.set_text(f'Waiting for players ({len(d)+1}/2)')
                     self.run_game.obsticles=o
                 elif data.startswith(b'UPL~'):
                     action = data[:3]

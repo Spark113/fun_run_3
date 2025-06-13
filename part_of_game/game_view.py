@@ -13,18 +13,17 @@ class print_game():#
         pygame.init()
         self.controller=controller
         self.player_x=0
-        self.player_y=420
+        self.player_y=1004
         self.camera_x=0
-        self.camera_y=0
+        self.camera_y=584
         self.camera_width=700
         self.camera_height=700
         self.camera_view = pygame.Rect(self.camera_x, self.camera_y, self.controller.screen_width, self.controller.screen_hight)
-        self.in_air=False
+        self.in_air=True
         self.err_box = TextBox(200, 400, 300, 40, True)
         self.exit_btn = Buttom(500, 10, 100, 40, True, 'Exit')
         self.key_down=False
         self.last_key = None
-        #self.map_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))
         self.white_mask = pygame.mask.from_threshold(self.controller.mask_map_img, (255, 255, 255), (1, 1, 1))#get the withe part
         self.white_speed_musk=pygame.mask.from_threshold(self.controller.speed_musk_img, (255, 255, 255), (1, 1, 1))
         self.map_mask = self.white_mask.copy()
@@ -48,15 +47,14 @@ class print_game():#
         self.players={}
         self.players_slide={}
         self.obsticles={}
+        self.names={}
         self.leader_board=None
         self.cant_move = False
-        self.timer=TextBox(5,5,200,40,True,'timer')
-        # self.start_time=None
-        # self.cant_move=False
-        # self.cant_move_cnt=45
+        self.timer=TextBox(5,5,300,40,True,'timer')
         self.slide=False
         self.slide_cnt=100
         self.end_game=False
+        self.started=False
     def print_map(self):
 
         self.camera_x = max(0,self.player_x-self.controller.screen_width//2)
@@ -70,99 +68,75 @@ class print_game():#
                 self.slide_cnt=100
                 self.slide=False
                 self.player_y-=20
-            #print('cnt',self.slide_cnt)
         else:
             self.controller.screen.blit(self.controller.player_img, (self.player_x-self.camera_x, self.player_y-self.camera_y))
-        for k,v in self.players.items():
-            if k in self.players_slide.keys():
-                #print(k,self.players_slide)
-                self.controller.screen.blit(self.rotated_player_counterclockwise,(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y))
-                self.players_slide[k]-=1
-                if self.players_slide[k]==0:
-                    del self.players_slide[k]
-            else:
-                self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
+        if self.started:
+            for k,v in self.players.items():
+                Text_name=TextBox(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y-41,100,40,True,k)
+                if k in self.players_slide.keys():
+                    #print(k,self.players_slide)
+                    self.controller.screen.blit(self.rotated_player_counterclockwise,(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y))
+                    self.players_slide[k]-=1
+                    if self.players_slide[k]==0:
+                        del self.players_slide[k]
+                else:
+                    self.controller.screen.blit(self.controller.player_img,(int(v[0]) - self.camera_x,int(v[1]) - self.camera_y))
+                Text_name.draw(self.controller.screen)
         for k,v in self.obsticles.items():
             if int(v[0]) !=0 and int(v[1])!=0:
                 self.controller.screen.blit(self.controller.saw_blade_img,(int(v[0])-self.camera_x, int(v[1])-self.camera_y))
         if self.obsticle_x!=0 and self.obsticle_y!=0:
             self.controller.screen.blit(self.controller.saw_blade_img, (self.obsticle_x - self.camera_x, self.obsticle_y - self.camera_y))
         self.exit_btn.draw(self.controller.screen)
-        #self.timer = TextBox(0, self.camera_view.top, 200, 40, True, 'time: '+str(round((time.time()-self.start_time),2)))
-        self.timer.set_text('time: '+str(round((time.time()-self.start_time),2)))
+        if self.started:
+            self.timer.set_text('time: '+str(round((time.time()-self.start_time),2)))
         self.timer.draw(self.controller.screen)
         pygame.display.flip()
 
-    def handel_input_player(self,key,val_x,val_y,max_x):
-        print('here')
-        moved=False
-        if key[pygame.K_d]:
-            if not self.col(self.player_x + self.add_left_right, self.player_y):
-                if val_x < max_x:
-                    val_x += self.add_left_right
-            else:
-                self.go_over_x(1)
-        if key[pygame.K_a]:
-            if self.player_x > 0:
-                if not self.col(self.player_x - self.add_left_right, self.player_y):
-                    if val_x > (max_x * -1):
-                        val_x -= self.add_left_right
-                else:
-                    self.go_over_x(-1)
-        if key[pygame.K_w]:
-            if not self.col(self.player_x, self.player_y - self.add_up) and not self.in_air:
-                val_y -= self.add_up
-                self.in_air = True
-        # if key[pygame.K_s]:
-        #     if not self.col(self.player_x,self.player_y) and not rotated:
-        #         #send_with_size(self.controller.sock,'PUD~rotate')#photo upade
-        #         rotated=True
-        #         self.use_player = self.controller.player_img
-        #         self.use_player_mask = self.player_mask
-        if key[pygame.K_o]:
-            if not self.obsticle:
-                self.obsticle = True
-                self.obsticle_x = self.player_x + self.add_obsticle
-                self.obsticle_y = self.player_y
-        if not self.cant_move:
-            if val_y != 10:
-                val_y += 1
-            if val_x != 0:
-                if not self.in_air:
-                    if val_x > 0:
-                        val_x -= 1
-                    else:
-                        val_x += 1
-                else:
-                    if val_x > 0:
-                        val_x = 5
-                    else:
-                        val_x = -5
-            if not self.col(self.player_x, self.player_y + val_y):
-                self.player_y += val_y
-                self.camera_y += val_y
-                moved = True
-            else:
-                self.in_air = False
-            if not self.col(self.player_x + val_x, self.player_y):
-                self.player_x += val_x
-                if val_x != 0:
-                    moved = True
-            else:
-                if self.go_over_x(val_x):
-                    moved = True
 
-            if moved:
-                send_with_size(self.controller.sock, (f'UPD~{str(self.player_x)}~{str(self.player_y)}').encode())
-                moved = False
-
-        else:
-            self.cant_move_cnt -= 1
-            if self.cant_move_cnt == 0:
-                self.cant_move = False
-        val_x = self.col_speed(val_x, self.player_x, self.player_y)
     def game(self):
         try:
+            send_with_size(self.controller.sock, (f'UPD~{str(-10)}~{str(-10)}').encode())#to enter the players dict in run_game
+            self.started=False
+            while not self.controller.finish and len(self.players)+1 < 2:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.controller.finish = True
+                    if event.type==pygame.MOUSEBUTTONDOWN:
+                        if self.exit_btn.is_clicked(event.pos):
+                            print('exiting')
+                            self.controller.exit()
+                            self.controller.finish=True
+                            break
+                self.timer.set_text(f'Waiting for players ({len(self.players)}/2)')
+                self.print_map()
+                pygame.display.flip()
+
+            self.timer.set_text(f'Waiting for players ({len(self.players)}/2)')
+            countdown = 5
+            countdown_start = time.time()
+
+            while not self.controller.finish and countdown > 0:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.controller.finish = True
+                    if event.type==pygame.MOUSEBUTTONDOWN:
+                        if self.exit_btn.is_clicked(event.pos):
+                            print('exiting')
+                            self.controller.exit()
+                            self.controller.finish = True
+                            break
+                elapsed = time.time() - countdown_start
+                countdown = 5 - int(elapsed)
+                pygame.display.flip()
+
+                if countdown > 0:
+                    self.timer.set_text(f'Starting in {countdown}')
+                    self.print_map()
+                    self.controller.clock.tick(self.controller.refresh)
+                pygame.display.flip()
+            """after the start of the game"""
+            self.started=True
             self.start_time=time.time()
             max_x=10
             max_y=10
@@ -204,14 +178,10 @@ class print_game():#
                             self.obsticle_x=self.player_x+self.add_obsticle
                             self.obsticle_y=self.player_y
                     if key[pygame.K_s]:
-                        #print('cant move',self.cant_move)
                         if not self.cant_move:
-                            #print('cant move', self.cant_move)
                             if not self.col(self.player_x,self.player_y) and not rotated and not self.in_air:
                                 send_with_size(self.controller.sock, (f'UPD~{str(-1)}~{str(-1)}').encode())
                                 self.slide=True
-                                # self.use_player = self.controller.player_img
-                                # self.use_player_mask = self.player_mask
                     if event.type==pygame.MOUSEBUTTONDOWN:
                         if self.exit_btn.is_clicked(event.pos):
                             print('exiting')

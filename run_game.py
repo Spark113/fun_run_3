@@ -44,6 +44,7 @@ class run_class():#
         for k,v in self.players.items():
             if k!=name:
                 p[k]=v
+        print(p)
         return pickle.dumps(p)
 
     def get_obstcles(self,name):
