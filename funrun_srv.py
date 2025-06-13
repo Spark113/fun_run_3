@@ -227,12 +227,12 @@ def handle_client(sock,tid,addr):
         except socket.timeout:
             pending = AMessages.get_async_messages_to_send(sock)
             for m in pending:
-                print(m)
                 send_with_size(sock, m)
             continue
         except ConnectionResetError as err:
             exit(user_name1)
             print('bye bye',err)
+            finish=True
         except Exception as err:
             print(f'General Error: {err} - exiting client loop')
             print(traceback.format_exc())

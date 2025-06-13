@@ -135,8 +135,7 @@ class Game():
                     fields = data[4:]
                     d = pickle.loads(fields)
                     print('d', d)
-                    self.board_obj.board_ready=True
-                    self.board_dict=d
+                    self.board_obj.dict_to_lst(d)
                 else:
                     data=data.decode()
                     action = data[:3]
