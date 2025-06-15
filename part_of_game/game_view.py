@@ -1,6 +1,4 @@
 import pygame
-from fontTools.merge import timer
-from setuptools.command.rotate import rotate
 
 from ui_elements.input_box import InputBox
 from ui_elements.text_box import TextBox
@@ -51,6 +49,7 @@ class print_game():#
         self.leader_board=None
         self.cant_move = False
         self.timer=TextBox(5,5,300,40,True,'timer')
+        self.got_hit_txt=TextBox(200,200,300,40,True,'you got hit cant move :)')
         self.slide=False
         self.slide_cnt=100
         self.end_game=False
@@ -74,7 +73,6 @@ class print_game():#
             for k,v in self.players.items():
                 Text_name=TextBox(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y-41,100,40,True,k)
                 if k in self.players_slide.keys():
-                    #print(k,self.players_slide)
                     self.controller.screen.blit(self.rotated_player_counterclockwise,(int(v[0]) - self.camera_x, int(v[1]) - self.camera_y))
                     self.players_slide[k]-=1
                     if self.players_slide[k]==0:
@@ -91,6 +89,8 @@ class print_game():#
         if self.started:
             self.timer.set_text('time: '+str(round((time.time()-self.start_time),2)))
         self.timer.draw(self.controller.screen)
+        if self.cant_move:
+            self.got_hit_txt.draw(self.controller.screen)
         pygame.display.flip()
 
 
@@ -108,11 +108,11 @@ class print_game():#
                             self.controller.exit()
                             self.controller.finish=True
                             break
-                self.timer.set_text(f'Waiting for players ({len(self.players)}/2)')
+                self.timer.set_text(f'Waiting for players ({len(self.players)+1}/2)')
                 self.print_map()
                 pygame.display.flip()
 
-            self.timer.set_text(f'Waiting for players ({len(self.players)}/2)')
+            self.timer.set_text(f'Waiting for players ({len(self.players)+1}/2)')
             countdown = 5
             countdown_start = time.time()
 
@@ -142,13 +142,10 @@ class print_game():#
             max_y=10
             val_x=0
             val_y=1
-            #obsticle_val_x=0
-            #obsticle_val_y=0
             moved=False
             obsticle_cnt=45
             cant_move_cnt=100
             obsticle=False
-            rotate_cnt=100
             rotated=False
             while not self.controller.finish and not self.end_game:
                 for event in pygame.event.get():
@@ -266,7 +263,6 @@ class print_game():#
 
                     pygame.display.flip()
                     self.controller.clock.tick(30)
-            print('stop2')
         except OSError as err:
             self.controller.exit()
             print('bye bye',err)

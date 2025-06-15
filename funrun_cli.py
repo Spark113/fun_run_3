@@ -36,7 +36,6 @@ class Game():
         self.player_img = pygame.image.load('among_us.png').convert_alpha()
         self.map_img = pygame.image.load('map2.png').convert()
         print(self.map_img.get_width())
-        #self.map_img = pygame.image.load('mask_map.png').convert()
         self.mask_map_img=pygame.image.load('map2_musk.png').convert()
         self.speed_musk_img=pygame.image.load('speed_musk.png').convert()
         self.saw_blade_img=pygame.image.load('saw_blade2.png').convert_alpha()
@@ -59,7 +58,8 @@ class Game():
         self.rooms_obj=room(self)
         self.run_game=print_game(self)
         self.board_obj=board(self)
-        print('start')
+        if self.debug:
+            print('start')
         if not self.finish:
             self.connect_obj.connect_to_srv()
         if not self.finish:
@@ -69,14 +69,11 @@ class Game():
             self.rooms_obj.show_rooms()
         if not self.finish:
             self.run_game.game()
-        print('done')#works now i need to do the game
+        if self.debug:
+            print('done')#works now i need to do the game
         self.board_obj.board_draw()
         pygame.quit()
 
-    def main_game(self):
-        while True:
-            print('hi')
-        pass
 
 
     def exit(self):
@@ -114,9 +111,11 @@ class Game():
                 if data.startswith(b'GRS~'):
                     action = data[:3]
                     fields = data[4:]
-                    print(fields)
+                    if self.debug:
+                        print(fields)
                     d=pickle.loads(fields)
-                    print(d)
+                    if self.debug:
+                        print(d)
                     self.rooms_obj.make_lst(d)
                     self.err_box.set_text('get refresh')
                 elif data.startswith(b'GOP~'):
@@ -129,13 +128,13 @@ class Game():
                     print('o',o)
                     print('d', d)
                     self.run_game.players=d
-                    #self.run_game.timer.set_text(f'Waiting for players ({len(d)+1}/2)')
                     self.run_game.obsticles=o
                 elif data.startswith(b'UPL~'):
                     action = data[:3]
                     fields = data[4:]
                     d = pickle.loads(fields)
-                    print('d', d)
+                    if self.debug:
+                        print('d', d)
                     self.board_obj.dict_to_lst(d)
                 else:
                     data=data.decode()
@@ -179,11 +178,9 @@ class Game():
 
                     elif action=='MRS':
                         self.err_box.set_text(fields[0])
-                        #self.draw_all()
                     elif action=='GRS':
                         self.rooms_obj.make_lst(pickle.loads(fields[0].encode()))
                         self.err_box.set_text('get refresh')
-                        #self.draw_all()
                     elif action == 'JRI':
                         if fields[0]=='Successful':
                             self.err_box.set_text(fields[0])
@@ -199,10 +196,10 @@ class Game():
                 print(e)
                 self.can_close=True
                 self.exit()
+                break
             except Exception as e:
                 print("Listener encountered error:", e)
                 self.err_box.set_text(e)
-                #self.draw_all()
                 break
 
 

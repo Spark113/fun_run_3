@@ -91,15 +91,14 @@ def exit(user_name1):
     global connected
     global users_rooms
     try:
-        print(user_name1, connected)
+        #print(user_name1, connected)
         if user_name1 in connected:
-            print('a')
             connected.remove(user_name1)
-            print(user_name1,users_rooms.keys())
+            #print(user_name1,users_rooms.keys())
             if user_name1 in users_rooms.keys():
-                print(users_rooms[user_name1].del_player(user_name1))
+                #print(users_rooms[user_name1].del_player(user_name1))
                 del users_rooms[user_name1]
-            print(user_name1 in users_rooms.keys(), 'users_rooms')
+            #print(user_name1 in users_rooms.keys(), 'users_rooms')
         return 'BYE~'
     except Exception as err:
         print('err',err)
@@ -120,7 +119,6 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
             user_name = Decrypt_AES(key, iv, base64.b64decode(request[1])).decode()
             password1 = Decrypt_AES(key, iv, base64.b64decode(request[2])).decode()
             reply, logged = login(user_name, password1, sock)
-            print(user_name1, connected)
             return reply, logged, user_name, key
 
         elif request_code == 'SGU':
@@ -150,13 +148,11 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
                 rooms_info = {}
                 for room in rooms:
                     rooms_info.update(room.to_dic())
-                print(rooms_info)
                 reply=pickle.dumps(rooms_info)
                 return b'GRS~'+reply,None, user_name1, key
             elif request_code == 'JRI':
                 for room in rooms:
                     if room.room_id==request[1]:
-                        print('got here')
                         room.update_player(user_name1,0,0)
                         users_rooms[user_name1]=room
                 return 'JRI~Successful', None, user_name1, key
@@ -165,6 +161,7 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
                 return 'UPD~Successful', None, user_name1, key
             elif request_code=='UPL':
                 users_rooms[user_name1].leaderbord(user_name1,float(request[1]))
+                #users_rooms[user_name1].del_player(user_name1)
                 return 'ULL~Successful', None, user_name1, key
             elif request_code == 'GOP':#get others players
                 dic_p=users_rooms[user_name1].get_players(user_name1)
