@@ -221,6 +221,7 @@ class print_game():#
                 else:
                     cant_move_cnt-=1
                     if cant_move_cnt==0:
+                        cant_move_cnt=100
                         self.cant_move=False
                 """from here its obsticle movment"""
                 if self.obsticle_x !=0 and self.obsticle_y!=0:

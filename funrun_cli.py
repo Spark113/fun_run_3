@@ -1,5 +1,7 @@
 import pickle
 import os
+import time
+from logging.config import listen
 from multiprocessing.reduction import duplicate
 
 from pandas.core.algorithms import duplicated
@@ -60,26 +62,34 @@ class Game():
         self.board_obj=board(self)
         if self.debug:
             print('start')
-        if not self.finish:
-            self.connect_obj.connect_to_srv()
-        if not self.finish:
-            self.login_obj.login_loop()
-        self.can_close = False
-        if not self.finish:
-            self.rooms_obj.show_rooms()
-        if not self.finish:
-            self.run_game.game()
-        if self.debug:
-            print('done')#works now i need to do the game
-        self.board_obj.board_draw()
-        pygame.quit()
+        try:
+            if not self.finish:
+                self.connect_obj.connect_to_srv()
+            if not self.finish:
+                self.login_obj.login_loop()
+            self.can_close = False
+            if not self.finish:
+                self.rooms_obj.show_rooms()
+            if not self.finish:
+                self.run_game.game()
+            if self.debug:
+                print('done')#works now i need to do the game
+            self.board_obj.board_draw()
+            self.exit()
+        except ConnectionResetError as err:
+            print('got here')
+            self.exit()
 
 
 
     def exit(self):
         try:
-            self.err_box.set_text('shoting down')
             self.finish = True
+            self.err_box.set_text('shoting down')
+            self.screen.blit(self.img_start,(0,0))
+            self.err_box.draw(self.screen)
+            pygame.display.flip()
+            time.sleep(5)
             if self.conected:
                 send_with_size(self.sock, b'BYE~')
                 print('sent bye',self.can_close)
@@ -90,12 +100,19 @@ class Game():
                 self.sock.close()
             pygame.quit()
             print('got out')
+        except ConnectionResetError as err:
+            print('got here exit')
+            self.conected=False
+            if threading.current_thread() is not self.listener:
+                self.listener.join()
+            #self.sock.close()
+            #pygame.quit()
         except Exception as err:
             if self.debug:
-                print('--------------------------------------------------')
+                print('-------------------------------------------------- at exit')
                 print(err)
                 print('--------------------------------------------------')
-
+            pygame.quit()
 
 
 
@@ -193,6 +210,7 @@ class Game():
             except socket.timeout:
                 continue
             except ConnectionResetError as e:
+                print('got here')
                 print(e)
                 self.can_close=True
                 self.exit()

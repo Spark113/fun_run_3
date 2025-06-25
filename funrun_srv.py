@@ -97,6 +97,7 @@ def exit(user_name1):
             #print(user_name1,users_rooms.keys())
             if user_name1 in users_rooms.keys():
                 #print(users_rooms[user_name1].del_player(user_name1))
+                users_rooms[user_name1].del_player(user_name1)
                 del users_rooms[user_name1]
             #print(user_name1 in users_rooms.keys(), 'users_rooms')
         return 'BYE~'
@@ -141,6 +142,9 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
 
         if user_name1 in connected:#if he is logged in only then he can do something if not he have to login in
             if request_code == 'MRS':#make rooms
+                for i in rooms:
+                    if i.room_id==request[1]:
+                        return 'MRS~cant use that name',None, user_name1, key
                 rooms.append(run_class(AMessages,request[1]))#request[1]=id
                 return 'MRS~Successful',None, user_name1, key
 
@@ -177,6 +181,8 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
         return reply,None,user_name1, key
     except Exception as err:
         print(err)
+        if "dictionary changed size during iteration" in str(err):
+            return 'ERR~other player disconnected', None, user_name1, key
         return 'ERR~' + str(err), None,user_name1,key
 
 def handle_client(sock,tid,addr):

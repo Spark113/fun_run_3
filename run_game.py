@@ -79,6 +79,8 @@ class run_class():#
             for k, v in self.players.items():
                 print('sent to: ',k)
                 self.AMessages.put_msg_by_user(b'UPL~'+p_dict, k)  # UPP = update players leaderbord
+            for k, v in self.players.items():
+                self.del_player(k)
     def sort_dict(self,d:dict):
         sorted_dict={}
         while len(d.keys())>0:
