@@ -124,7 +124,8 @@ class print_game():#
                         if self.exit_btn.is_clicked(event.pos):
                             print('exiting')
                             self.controller.exit()
-                            self.controller.finish = True
+                            self.end_game=True
+                            #self.controller.finish = True
                             break
                 elapsed = time.time() - countdown_start
                 countdown = 5 - int(elapsed)

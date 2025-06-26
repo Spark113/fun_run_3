@@ -97,7 +97,8 @@ def exit(user_name1):
             #print(user_name1,users_rooms.keys())
             if user_name1 in users_rooms.keys():
                 #print(users_rooms[user_name1].del_player(user_name1))
-                users_rooms[user_name1].del_player(user_name1)
+                if user_name1 in users_rooms[user_name1].players.keys():
+                    users_rooms[user_name1].del_player(user_name1)
                 del users_rooms[user_name1]
             #print(user_name1 in users_rooms.keys(), 'users_rooms')
         return 'BYE~'

@@ -77,14 +77,15 @@ class Game():
             self.board_obj.board_draw()
             self.exit()
         except ConnectionResetError as err:
-            print('got here')
+            if self.debug:
+                print('got here')
             self.exit()
 
 
 
     def exit(self):
         try:
-            self.finish = True
+            #self.finish = True
             self.err_box.set_text('shoting down')
             self.screen.blit(self.img_start,(0,0))
             self.err_box.draw(self.screen)
@@ -92,16 +93,23 @@ class Game():
             time.sleep(5)
             if self.conected:
                 send_with_size(self.sock, b'BYE~')
-                print('sent bye',self.can_close)
+                if self.debug:
+                    print('sent bye',self.can_close)
+                    print(f'finish ',self.finish)
                 while not self.can_close:
                     continue
-                print('recv bye')
+                self.finish = True
+                if self.debug:
+                    print('recv bye')
                 self.listener.join()
                 self.sock.close()
             pygame.quit()
-            print('got out')
+            if self.debug:
+                print('got out')
+            self.finish = True
         except ConnectionResetError as err:
-            print('got here exit')
+            if self.debug:
+                print('got here exit')
             self.conected=False
             if threading.current_thread() is not self.listener:
                 self.listener.join()
