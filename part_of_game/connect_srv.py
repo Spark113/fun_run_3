@@ -27,21 +27,22 @@ class connect():#
             self.draw_all()
 
     def connect_to_srv(self):
-        print('a')
-        print(self.controller.finish)
+        if self.controller.debug:
+            print('finish',self.controller.finish)
         while not self.controller.finish and not self.controller.conected:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.controller.finish = True
-                # Let input boxes process the event
                 self.server_ip.handle_event(event)
                 self.server_port.handle_event(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.connect_btn.is_clicked(event.pos):
-                        print("Attempting connect with:", self.server_ip.text, self.server_port.text)
+                        if self.controller.debug:
+                            print("Attempting connect with:", self.server_ip.text, self.server_port.text)
                         self.attempt_connect(self.server_ip.text, self.server_port.text)
-                        print(self.controller.conected)
+                        if self.controller.debug:
+                            print('connected: ',self.controller.conected)
                     if self.exit_btn.is_clicked(event.pos):
                         print('exiting')
                         self.controller.exit()

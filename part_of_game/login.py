@@ -48,16 +48,17 @@ class log():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.controller.finish = True
-                # Let input boxes process the event
                 self.user_box.handle_event(event)
                 self.pass_box.handle_event(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.login_btn.is_clicked(event.pos):
-                        print("Attempting login with:", self.user_box.text, self.pass_box.text)
+                        if self.controller.debug:
+                            print("Attempting login with:", self.user_box.text, self.pass_box.text)
                         self.attemp_login(self.user_box.text, self.pass_box.text)
                     if self.sign_up_btn.is_clicked(event.pos):
-                        print("Attempting login with:", self.user_box.text, self.pass_box.text)
+                        if self.controller.debug:
+                            print("Attempting login with:", self.user_box.text, self.pass_box.text)
                         send_with_size(self.controller.sock, (f'SGU~{self.user_box.text}~{self.pass_box.text}').encode())
 
                     if self.exit_btn.is_clicked(event.pos):
@@ -70,7 +71,6 @@ class log():
 
                 pygame.display.flip()
                 self.controller.clock.tick(30)
-        print('stop2')
 
     def draw_all(self):
         self.controller.screen.blit(self.controller.img_start, (0, 0))

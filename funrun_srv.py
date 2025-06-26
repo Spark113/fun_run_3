@@ -22,6 +22,7 @@ AMessages = AsyncMessages()
 all_to_die = False
 users_rooms={}
 MaxPlayers=2
+DEBUG_B=True
 def logtcp(direction, tid, byte_data):
     if direction == 'sent':
         print(f'{tid} S LOG: Sent     >>> {byte_data}')
@@ -83,7 +84,8 @@ def login(username, password, sock):
 
 def rsa_key(public_key,rsa_obj):
     key = os.urandom(16)
-    print(key)
+    if DEBUG_B:
+        print(key)
     other_key = public_key
     rsa_obj.set_other_public(other_key)
     key_enc = rsa_obj.encrypt_RSA(key)
@@ -138,7 +140,8 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
 
         elif request_code == 'GSR':
             public_key_b64 = request[1]
-            print(public_key_b64)
+            if DEBUG_B:
+                print(public_key_b64)
             public_key = base64.b64decode(public_key_b64.encode())
             msg, key = rsa_key(public_key, rsa_obj)
             msg_64=base64.b64encode(msg).decode()
@@ -173,17 +176,16 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
                 return 'UPD~Successful', None, user_name1, key
             elif request_code=='UPL':
                 users_rooms[user_name1].leaderbord(user_name1,float(request[1]))
-                #users_rooms[user_name1].del_player(user_name1)
                 return 'ULL~Successful', None, user_name1, key
             elif request_code == 'GOP':#get others players
                 dic_p=users_rooms[user_name1].get_players(user_name1)
-                #dic_o=users_rooms[user_name1].get_obstcles(user_name1)
                 return b'GOP~'+dic_p, None, user_name1, key
             elif request_code == 'UPO':#update obsticle
                 users_rooms[user_name1].update_obsticle(user_name1,int(request[1]),int(request[2]))
                 return 'UPO~Successful', None, user_name1, key
         else:
-            print(connected,user_name1)
+            if DEBUG_B:
+                print(connected,user_name1)
             return 'LOG~you have to login first',None, user_name1, key
 
         return reply,None,user_name1, key

@@ -86,7 +86,7 @@ class Game():
             self.screen.blit(self.img_start,(0,0))
             self.err_box.draw(self.screen)
             pygame.display.flip()
-            time.sleep(5)
+            time.sleep(2)
             if self.conected:
                 send_with_size(self.sock, b'BYE~')
                 if self.debug:

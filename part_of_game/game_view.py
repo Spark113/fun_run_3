@@ -56,10 +56,12 @@ class print_game():#
         self.started=False
     def print_map(self):
 
-        self.camera_x = max(0,self.player_x-self.controller.screen_width//2)
-        self.camera_view.topleft = (self.camera_x, self.camera_y)
-        self.camera_view = pygame.Rect(self.camera_x, self.camera_y, self.controller.screen_width, self.controller.screen_hight)
-        self.controller.screen.blit(self.controller.map_img, (0, 0),self.camera_view)
+        self.camera_x = max(0,self.player_x-self.controller.screen_width//2)#Center camera horizontally on player, but do not scroll past left edge (x >= 0) camera_y is player y
+        self.camera_view.topleft = (self.camera_x, self.camera_y)#Update the topleft coordinate of camera_view to new (camera_x, camera_y)
+        self.camera_view = pygame.Rect(self.camera_x, self.camera_y, self.controller.screen_width, self.controller.screen_hight)#Rebuild camera_view Rect to reflect potential
+        # screen size or dimension changes Rect(x, y, width, height) defines the area in the map image to blit
+        self.controller.screen.blit(self.controller.map_img, (0, 0),self.camera_view)# Source rectangle = camera_view (slice of full map to render),
+        # Destination = (0,0) on the screen surface
         if self.slide:
             self.controller.screen.blit(self.rotated_player_counterclockwise,(self.player_x - self.camera_x, self.player_y - self.camera_y))
             self.slide_cnt-=1
@@ -96,7 +98,7 @@ class print_game():#
 
     def game(self):
         try:
-            send_with_size(self.controller.sock, (f'UPD~{str(-10)}~{str(-10)}').encode())#to enter the players dict in run_game -10 is just a num
+            send_with_size(self.controller.sock, (f'UPD~{str(-10)}~{str(-10)}').encode())#to enter the players dict in run_game -10 is just a num cus update player also add than to dict
             self.started=False
             while not self.controller.finish and len(self.players)+1 < 2:
                 for event in pygame.event.get():

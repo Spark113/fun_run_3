@@ -20,17 +20,17 @@ class room():
     def make_lst(self,data):
         start_x = 100
         start_y = 50
-        print(data,'in r')
+        if self.controller.debug:
+            print(data,'in r')
         cnt=0
         for k,v in data.items():
-            print(v,'in i')
-            print(k)
-            #for k,v in i:
+            if self.controller.debug:
+                print(v,'in i')
+                print(k)
             self.rooms_lst.append(Buttom(start_x, start_y + (cnt * 40), 400, 40, True,f'room name:{k}, players in {v}'))
             cnt += 1
 
     def show_rooms(self):
-        print('start')
         send_with_size(self.controller.sock, ('GRS~').encode())
         while not self.controller.finish and not self.joined:
             for event in pygame.event.get():
@@ -50,10 +50,12 @@ class room():
                         break
                     for i in self.rooms_lst:
                         if i.is_clicked(event.pos):
-                            print(i.text)
+                            if self.controller.debug:
+                                print(i.text)
                             room_id=i.text.split(',')[0]
                             room_id=room_id.split(':')[1]
-                            print(room_id)#i tested it is working
+                            if self.controller.debug:
+                                print(room_id)#i tested it is working
                             send_with_size(self.controller.sock, (f'JRI~{room_id}').encode())#join room id
             if not self.controller.finish:
                 self.draw_all()
