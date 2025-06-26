@@ -8,6 +8,7 @@ import sys
 
 class run_class():#
     def __init__(self,AMessages,id):
+        self.debug=True
         self.AMessages=AMessages
         self.room_id=id
         self.players={}
@@ -71,13 +72,16 @@ class run_class():#
     def leaderbord(self,name,time):
         self.leaderbord_dict[name]=time
         self.leaderbord_dict=self.sort_dict(self.leaderbord_dict)
-        print(len(self.leaderbord_dict.keys()),len(self.players.keys()))
-        print(self.leaderbord_dict,self.players)
+        if self.debug:
+            print(len(self.leaderbord_dict.keys()),len(self.players.keys()))
+            print(self.leaderbord_dict,self.players)
         if len(self.leaderbord_dict.keys())==len(self.players.keys()):
-            print('ended here',self.leaderbord_dict)
+            if self.debug:
+                print('ended here',self.leaderbord_dict)
             p_dict=pickle.dumps(self.leaderbord_dict)
             for k, v in self.players.items():
-                print('sent to: ',k)
+                if self.debug:
+                    print('sent to: ',k)
                 self.AMessages.put_msg_by_user(b'UPL~'+p_dict, k)  # UPP = update players leaderbord
             for k, v in self.players.items():
                 self.del_player(k)

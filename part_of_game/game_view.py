@@ -96,7 +96,7 @@ class print_game():#
 
     def game(self):
         try:
-            send_with_size(self.controller.sock, (f'UPD~{str(-10)}~{str(-10)}').encode())#to enter the players dict in run_game
+            send_with_size(self.controller.sock, (f'UPD~{str(-10)}~{str(-10)}').encode())#to enter the players dict in run_game -10 is just a num
             self.started=False
             while not self.controller.finish and len(self.players)+1 < 2:
                 for event in pygame.event.get():
@@ -153,6 +153,7 @@ class print_game():#
                     if event.type == pygame.QUIT:
                         self.controller.finish = True
                     key=pygame.key.get_pressed()
+                    """handel input from player"""
                     if key[pygame.K_d]:
                         if not self.col(self.player_x + self.add_left_right, self.player_y):
                             if val_x<max_x:
@@ -187,6 +188,7 @@ class print_game():#
                             break
                         else:
                             print(self.player_x)
+                """HANDEL PLAYER MOVMENT BY VAL"""
                 if not self.cant_move:
                     if val_y!=10:
                         val_y+=1

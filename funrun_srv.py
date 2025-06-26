@@ -101,6 +101,8 @@ def exit(user_name1):
                 #print(users_rooms[user_name1].del_player(user_name1))
                 if user_name1 in users_rooms[user_name1].players.keys():
                     users_rooms[user_name1].del_player(user_name1)
+                if user_name1 in users_rooms[user_name1].leaderbord_dict.keys():
+                    del users_rooms[user_name1].leaderbord_dict[user_name1]
                 del users_rooms[user_name1]
             #print(user_name1 in users_rooms.keys(), 'users_rooms')
         return 'BYE~'
@@ -255,16 +257,16 @@ def main():
 
     port=3001
 
-    upnp = miniupnpc.UPnP()
-    upnp.discoverdelay = 200
-    n = upnp.discover()
-    print(f"Found {n} UPnP devices")
-    upnp.selectigd()
-    try:
-        upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'MyGameServer', '')
-        print(f">> UPnP: mapped external {port} to {upnp.lanaddr}:{port}/TCP")
-    except Exception as ex:
-        print(f"!! UPnP mapping failed: {ex}")
+    # upnp = miniupnpc.UPnP()
+    # upnp.discoverdelay = 200
+    # n = upnp.discover()
+    # print(f"Found {n} UPnP devices")
+    # upnp.selectigd()
+    # try:
+    #     upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'MyGameServer', '')
+    #     print(f">> UPnP: mapped external {port} to {upnp.lanaddr}:{port}/TCP")
+    # except Exception as ex:
+    #     print(f"!! UPnP mapping failed: {ex}")
 
 
     threads = []
