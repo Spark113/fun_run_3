@@ -8,6 +8,9 @@ import secrets
 import base64
 from dataclasses import fields
 
+import miniupnpc#to check if it is working from 2 computers not in the same network
+from scapy.compat import plain_str
+
 from encrption.TCP_AES import Decrypt_AES
 from encrption.tcp_by_size import send_with_size, recv_by_size
 from encrption.AsyncMessages import AsyncMessages
@@ -20,6 +23,7 @@ connected = []
 AMessages = AsyncMessages()
 all_to_die = False
 users_rooms={}
+MaxPlayers=2
 def logtcp(direction, tid, byte_data):
     if direction == 'sent':
         print(f'{tid} S LOG: Sent     >>> {byte_data}')
@@ -158,8 +162,11 @@ def protocol_build_reply(request, sock, user_name1, finish, key,rsa_obj):
             elif request_code == 'JRI':
                 for room in rooms:
                     if room.room_id==request[1]:
-                        room.update_player(user_name1,0,0)
-                        users_rooms[user_name1]=room
+                        if len(room.players)<MaxPlayers:
+                            room.update_player(user_name1,0,0)
+                            users_rooms[user_name1]=room
+                        else:
+                            return 'JRI~can join lobby is full', None, user_name1, key
                 return 'JRI~Successful', None, user_name1, key
             elif request_code == 'UPD':#update player
                 users_rooms[user_name1].update_pos_exept_me(user_name1,int(request[1]),int(request[2]))
@@ -248,9 +255,23 @@ def main():
 
     AMessages = AsyncMessages()
 
+    port=3001
+
+    # upnp = miniupnpc.UPnP()
+    # upnp.discoverdelay = 200
+    # n = upnp.discover()
+    # print(f"Found {n} UPnP devices")
+    # upnp.selectigd()
+    # try:
+    #     upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'MyGameServer', '')
+    #     print(f">> UPnP: mapped external {port} to {upnp.lanaddr}:{port}/TCP")
+    # except Exception as ex:
+    #     print(f"!! UPnP mapping failed: {ex}")
+
+
     threads = []
     srv_sock = socket.socket()
-    srv_sock.bind(('0.0.0.0', 3001))
+    srv_sock.bind(('0.0.0.0', port))
     srv_sock.listen(20)
 
     async_messages = AsyncMessages()

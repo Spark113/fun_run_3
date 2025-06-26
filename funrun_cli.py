@@ -211,6 +211,8 @@ class Game():
                             self.err_box.set_text(fields[0])
                             self.rooms_obj.joined=True
                             send_with_size(self.sock,('GOP~').encode())
+                        else:
+                            self.err_box.set_text(fields[0])
                     elif action=='ERR':
                         self.err_box.set_text(fields[0])
                     elif action=='BYE':
