@@ -1,10 +1,6 @@
 import pickle
 import os
 import time
-from logging.config import listen
-from multiprocessing.reduction import duplicate
-
-from pandas.core.algorithms import duplicated
 
 from encrption.RSA import RSA_CLASS
 from encrption.tcp_by_size import send_with_size, recv_by_size

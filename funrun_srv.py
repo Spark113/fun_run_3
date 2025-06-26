@@ -6,10 +6,8 @@ import pickle
 import hashlib
 import secrets
 import base64
-from dataclasses import fields
 
 import miniupnpc#to check if it is working from 2 computers not in the same network
-from scapy.compat import plain_str
 
 from encrption.TCP_AES import Decrypt_AES
 from encrption.tcp_by_size import send_with_size, recv_by_size
@@ -257,16 +255,16 @@ def main():
 
     port=3001
 
-    # upnp = miniupnpc.UPnP()
-    # upnp.discoverdelay = 200
-    # n = upnp.discover()
-    # print(f"Found {n} UPnP devices")
-    # upnp.selectigd()
-    # try:
-    #     upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'MyGameServer', '')
-    #     print(f">> UPnP: mapped external {port} to {upnp.lanaddr}:{port}/TCP")
-    # except Exception as ex:
-    #     print(f"!! UPnP mapping failed: {ex}")
+    upnp = miniupnpc.UPnP()
+    upnp.discoverdelay = 200
+    n = upnp.discover()
+    print(f"Found {n} UPnP devices")
+    upnp.selectigd()
+    try:
+        upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'MyGameServer', '')
+        print(f">> UPnP: mapped external {port} to {upnp.lanaddr}:{port}/TCP")
+    except Exception as ex:
+        print(f"!! UPnP mapping failed: {ex}")
 
 
     threads = []
